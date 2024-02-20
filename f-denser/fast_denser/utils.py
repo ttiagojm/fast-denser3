@@ -512,6 +512,7 @@ class Evaluator:
 
 
         trainable_count = model.count_params()
+        print(self.fitness_metric.__name__, self.fitness_metric.__name__ == "relu_determinant")
 
         if self.fitness_metric.__name__ == "relu_determinant":
             if datagen is None:
