@@ -17,7 +17,7 @@ from sklearn.metrics import accuracy_score, mean_squared_error
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
-from utils import calc_K
+from fast_denser.utils import calc_K
 
 def accuracy(y_true, y_pred):
 	"""
