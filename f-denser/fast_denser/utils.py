@@ -521,6 +521,7 @@ class Evaluator:
             
             # Passing only a batch of data to evaluate
             accuracy_test = self.fitness_metric(model, data[:batch_size, :, :, :])
+            print(accuracy_test)
 
             score = tf.keras.callbacks.History()
 
