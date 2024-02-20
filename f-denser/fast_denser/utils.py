@@ -510,8 +510,8 @@ class Evaluator:
                           loss='categorical_crossentropy',                          
                           metrics=['accuracy'])
 
+
         trainable_count = model.count_params()
-        print(self.fitness_metric.__name__)
 
         if self.fitness_metric.__name__ == "relu_determinant":
             if datagen is None:
@@ -524,7 +524,6 @@ class Evaluator:
 
             score = tf.keras.callbacks.History()
 
-        
         else:
             #early stopping
             early_stop = keras.callbacks.EarlyStopping(monitor='val_loss',
@@ -578,6 +577,7 @@ class Evaluator:
 
         score.history['trainable_parameters'] = trainable_count
         score.history['accuracy_test'] = accuracy_test
+        print(score.history['accuracy_test'])
 
         keras.backend.clear_session()
 
