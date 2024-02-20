@@ -65,6 +65,6 @@
     "default_train_time": 600,
 
     //fitness assignment metric
-    "fitness_metric": "accuracy"
+    "fitness_metric": "relu_determinant"
   }
 }
