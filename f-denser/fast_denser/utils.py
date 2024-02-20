@@ -435,19 +435,19 @@ class Evaluator:
         if learning['learning'] == 'rmsprop':
             return keras.optimizers.RMSprop(learning_rate = float(learning['lr']),
                                             rho = float(learning['rho']),
-                                            decay = float(learning['decay']))
+                                            weight_decay = float(learning['decay']))
         
         elif learning['learning'] == 'gradient-descent':
             return keras.optimizers.SGD(learning_rate = float(learning['lr']),
                                         momentum = float(learning['momentum']),
-                                        decay = float(learning['decay']),
+                                        weight_decay = float(learning['decay']),
                                         nesterov = bool(learning['nesterov']))
 
         elif learning['learning'] == 'adam':
             return keras.optimizers.Adam(learning_rate = float(learning['lr']),
                                          beta_1 = float(learning['beta1']),
                                          beta_2 = float(learning['beta2']),
-                                         decay = float(learning['decay']))
+                                         weight_decay = float(learning['decay']))
 
 
     def evaluate(self, phenotype, load_prev_weights, weights_save_path, parent_weights_path,\
