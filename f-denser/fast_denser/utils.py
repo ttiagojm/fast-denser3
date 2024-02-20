@@ -522,7 +522,9 @@ class Evaluator:
             print("relu_determinant")
             # Passing only a batch of data to evaluate
             K_mat = self.fitness_metric(model, data[:batch_size, :, :, :])
+            tf.print(K_mat)
             accuracy_test = tf.linalg.slogdet(K_mat)
+            tf.print(accuracy_test)
             print(accuracy_test)
 
             score = tf.keras.callbacks.History()
