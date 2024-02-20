@@ -1003,6 +1003,7 @@ class Individual:
                     metrics['accuracy'] = [i.item() for i in metrics['accuracy']]
             self.metrics = metrics
             if 'accuracy_test' in metrics:
+                print(metrics)
                 if type(self.metrics['accuracy_test']) is float:
                     self.fitness = self.metrics['accuracy_test']
                 else:
