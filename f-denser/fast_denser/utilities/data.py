@@ -144,7 +144,6 @@ def load_dataset(dataset, shape=(32,32)):
                                           on unseen data
     """
 
-
     if dataset == 'fashion-mnist':
         (x_train, y_train), (x_test, y_test) = keras.datasets.fashion_mnist.load_data()
         n_classes = 10
@@ -198,7 +197,7 @@ def load_dataset(dataset, shape=(32,32)):
         n_classes = 200
 
     else:
-        print('Error: the dataset is not valid')
+        print(f'Error: the dataset {dataset} is not valid')
         sys.exit(-1)
 
 
