@@ -512,7 +512,6 @@ class Evaluator:
 
 
         trainable_count = model.count_params()
-        print(self.fitness_metric.__name__, self.fitness_metric.__name__ == "relu_determinant")
 
         if self.fitness_metric.__name__ == "relu_determinant":
             if datagen is None:
@@ -520,8 +519,10 @@ class Evaluator:
             else: 
                 data = datagen_test.flow(self.dataset['evo_x_test'])
             
+            print("relu_determinant")
             # Passing only a batch of data to evaluate
-            accuracy_test = self.fitness_metric(model, data[:batch_size, :, :, :])
+            K_mat = self.fitness_metric(model, data[:batch_size, :, :, :])
+            accuracy_test = tf.linalg.slogdet(K_mat)
             print(accuracy_test)
 
             score = tf.keras.callbacks.History()
