@@ -68,7 +68,7 @@ def mse(y_true, y_pred):
 
 	return mean_squared_error(y_true, y_pred)
 
-
+@tf.function
 def relu_determinant(model, data):
 	
 	if isinstance(data, tuple):
