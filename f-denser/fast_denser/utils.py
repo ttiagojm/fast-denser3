@@ -510,53 +510,68 @@ class Evaluator:
                           loss='categorical_crossentropy',                          
                           metrics=['accuracy'])
 
-        #early stopping
-        early_stop = keras.callbacks.EarlyStopping(monitor='val_loss',
-                                                   patience=int(keras_learning['early_stop']),
-                                                   restore_best_weights=True)
-
-        #time based stopping
-        time_stop = TimedStopping(seconds=train_time, verbose=DEBUG)
-
-        #save individual with the lowest validation loss
-        #useful for when traaining is halted because of time
-        monitor = ModelCheckpoint(weights_save_path, monitor='val_loss',
-                                  verbose=DEBUG, save_best_only=True)
-
         trainable_count = model.count_params()
+        print(self.fitness_metric.__name__)
 
-        if datagen is not None:
-            score = model.fit_generator(datagen.flow(self.dataset['evo_x_train'],
-                                                 self.dataset['evo_y_train'],
-                                                 batch_size=batch_size),
-                                        steps_per_epoch=(self.dataset['evo_x_train'].shape[0]//batch_size),
-                                        epochs=int(keras_learning['epochs']),
-                                        validation_data=(datagen_test.flow(self.dataset['evo_x_val'], self.dataset['evo_y_val'], batch_size=batch_size)),
-                                        validation_steps = (self.dataset['evo_x_val'].shape[0]//batch_size),
-                                        callbacks = [early_stop, time_stop, monitor],
-                                        initial_epoch = num_epochs,
-                                        verbose= DEBUG)
+        if self.fitness_metric.__name__ == "relu_determinant":
+            if datagen is None:
+                data = self.dataset['evo_x_test']
+            else: 
+                data = datagen_test.flow(self.dataset['evo_x_test'])
+            
+            # Passing only a batch of data to evaluate
+            accuracy_test = self.fitness_metric(model, data[:batch_size, :, :, :])
+
+            score = tf.keras.callbacks.History()
+
+        
         else:
-            score = model.fit(x = self.dataset['evo_x_train'], 
-                              y = self.dataset['evo_y_train'],
-                              batch_size = batch_size,
-                              epochs = int(keras_learning['epochs']),
-                              steps_per_epoch=(self.dataset['evo_x_train'].shape[0]//batch_size),
-                              validation_data=(self.dataset['evo_x_val'], self.dataset['evo_y_val']),
-                              callbacks = [early_stop, time_stop, monitor],
-                              initial_epoch = num_epochs,
-                              verbose = DEBUG)
+            #early stopping
+            early_stop = keras.callbacks.EarlyStopping(monitor='val_loss',
+                                                    patience=int(keras_learning['early_stop']),
+                                                    restore_best_weights=True)
 
-        #save final moodel to file
-        model.save(weights_save_path.replace('.hdf5', '.h5'))
+            #time based stopping
+            time_stop = TimedStopping(seconds=train_time, verbose=DEBUG)
 
-        #measure test performance
-        if datagen_test is None:
-            y_pred_test = model.predict(self.dataset['evo_x_test'], batch_size=batch_size, verbose=0)
-        else:
-            y_pred_test = model.predict_generator(datagen_test.flow(self.dataset['evo_x_test'], batch_size=100, shuffle=False), steps=self.dataset['evo_x_test'].shape[0]//100, verbose=DEBUG)
+            #save individual with the lowest validation loss
+            #useful for when traaining is halted because of time
+            monitor = ModelCheckpoint(weights_save_path, monitor='val_loss',
+                                    verbose=DEBUG, save_best_only=True)
 
-        accuracy_test = self.fitness_metric(self.dataset['evo_y_test'], y_pred_test)
+            if datagen is not None:
+                score = model.fit_generator(datagen.flow(self.dataset['evo_x_train'],
+                                                    self.dataset['evo_y_train'],
+                                                    batch_size=batch_size),
+                                            steps_per_epoch=(self.dataset['evo_x_train'].shape[0]//batch_size),
+                                            epochs=int(keras_learning['epochs']),
+                                            validation_data=(datagen_test.flow(self.dataset['evo_x_val'], self.dataset['evo_y_val'], batch_size=batch_size)),
+                                            validation_steps = (self.dataset['evo_x_val'].shape[0]//batch_size),
+                                            callbacks = [early_stop, time_stop, monitor],
+                                            initial_epoch = num_epochs,
+                                            verbose= DEBUG)
+            else:
+                score = model.fit(x = self.dataset['evo_x_train'], 
+                                y = self.dataset['evo_y_train'],
+                                batch_size = batch_size,
+                                epochs = int(keras_learning['epochs']),
+                                steps_per_epoch=(self.dataset['evo_x_train'].shape[0]//batch_size),
+                                validation_data=(self.dataset['evo_x_val'], self.dataset['evo_y_val']),
+                                callbacks = [early_stop, time_stop, monitor],
+                                initial_epoch = num_epochs,
+                                verbose = DEBUG)
+                
+            #save final moodel to file
+            model.save(weights_save_path.replace('.hdf5', '.h5'))
+
+            #measure test performance
+            if datagen_test is None:
+                y_pred_test = model.predict(self.dataset['evo_x_test'], batch_size=batch_size, verbose=0)
+            else:
+                y_pred_test = model.predict_generator(datagen_test.flow(self.dataset['evo_x_test'], batch_size=100, shuffle=False), steps=self.dataset['evo_x_test'].shape[0]//100, verbose=DEBUG)
+
+            accuracy_test = self.fitness_metric(self.dataset['evo_y_test'], y_pred_test)
+            
 
         if DEBUG:
             print(phenotype, accuracy_test)
@@ -1007,3 +1022,11 @@ class Individual:
 
         return self.fitness
 
+
+
+def calc_K(K_orig, data):
+    data = tf.reshape(data, [data.shape[0], -1])
+    x = tf.cast(tf.math.greater(data, 0), float)
+    K_mat = tf.matmul(x, tf.transpose(x))
+    K2_mat = tf.matmul(1.-x, 1.-tf.transpose(x))
+    return K_orig + K_mat + K2_mat
