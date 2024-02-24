@@ -69,7 +69,7 @@ def mse(y_true, y_pred):
 	return mean_squared_error(y_true, y_pred)
 
 def relu_determinant(model, data):
-	print("Entered on metric")
+
 	if isinstance(data, tuple):
 		data = data[0]
 
@@ -91,5 +91,4 @@ def relu_determinant(model, data):
 		if i in relu_layers:
 			K_mat = calc_K(K_mat, layer)
 
-	print("Returning metric")
 	return K_mat

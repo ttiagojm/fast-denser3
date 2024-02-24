@@ -515,20 +515,16 @@ class Evaluator:
 
         if self.fitness_metric.__name__ == "relu_determinant":
             if datagen is None:
-                print("Without Datagen")
                 data = self.dataset['evo_x_test']
                 data = data[:batch_size, :, :, :]
             else: 
-                print("With Datagen")
                 data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=batch_size)
                 data = next(iter(data))
             
-            print("relu_determinant")
             # Passing only a batch of data to evaluate
             K_mat = self.fitness_metric(model, data)
             _, det = tf.linalg.slogdet(K_mat)
             accuracy_test = float(tf.get_static_value(det))
-            print("end relu_determinant")
 
         else:
             #early stopping
@@ -583,7 +579,6 @@ class Evaluator:
 
         score.history['trainable_parameters'] = trainable_count
         score.history['accuracy_test'] = accuracy_test
-        print(score.history['accuracy_test'])
 
         keras.backend.clear_session()
 
