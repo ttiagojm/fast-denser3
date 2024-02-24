@@ -527,7 +527,7 @@ class Evaluator:
             # Passing only a batch of data to evaluate
             K_mat = self.fitness_metric(model, data)
             _, det = tf.linalg.slogdet(K_mat)
-            accuracy_test = tf.get_static_value(det)
+            accuracy_test = float(tf.get_static_value(det))
             print("end relu_determinant")
 
         else:
