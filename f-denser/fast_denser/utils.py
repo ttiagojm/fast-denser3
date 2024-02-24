@@ -520,13 +520,13 @@ class Evaluator:
                 data = data[:batch_size, :, :, :]
             else: 
                 print("With Datagen")
-                data = datagen_test.flow(self.dataset['evo_x_test'])
+                data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=batch_size)
                 data = next(iter(data))
             
             print("relu_determinant")
             # Passing only a batch of data to evaluate
             K_mat = self.fitness_metric(model, data)
-            accuracy_test = tf.linalg.slogdet(K_mat)
+            _, accuracy_test = tf.get_static_value( tf.linalg.slogdet(K_mat) )
             print("end relu_determinant")
 
         else:
