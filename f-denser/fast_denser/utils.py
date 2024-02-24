@@ -985,9 +985,9 @@ class Individual:
         #                     weights_save_path, parent_weights_path,\
         #                     train_time, self.num_epochs, datagen, datagen_test)])
         #     metrics = pool_results.get()[0]
-        metrics = evaluate(cnn_eval, phenotype, load_prev_weights,\
+        metrics = evaluate([cnn_eval, phenotype, load_prev_weights,\
                              weights_save_path, parent_weights_path,\
-                             train_time, self.num_epochs, datagen, datagen_test)
+                             train_time, self.num_epochs, datagen, datagen_test])
 
 
         if metrics is not None:
