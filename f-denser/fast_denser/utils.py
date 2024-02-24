@@ -983,15 +983,15 @@ class Individual:
 
         train_time = self.train_time - self.current_time
 
-        # num_pool_workers=1 
-        # with contextlib.closing(Pool(num_pool_workers)) as po: 
-        #     pool_results = po.map_async(evaluate, [(cnn_eval, phenotype, load_prev_weights,\
-        #                     weights_save_path, parent_weights_path,\
-        #                     train_time, self.num_epochs, datagen, datagen_test)])
-        #     metrics = pool_results.get()[0]
-        metrics = evaluate([cnn_eval, phenotype, load_prev_weights,\
-                             weights_save_path, parent_weights_path,\
-                             train_time, self.num_epochs, datagen, datagen_test])
+        num_pool_workers=1 
+        with contextlib.closing(Pool(num_pool_workers)) as po: 
+            pool_results = po.map_async(evaluate, [(cnn_eval, phenotype, load_prev_weights,\
+                            weights_save_path, parent_weights_path,\
+                            train_time, self.num_epochs, datagen, datagen_test)])
+            metrics = pool_results.get()[0]
+        # metrics = evaluate([cnn_eval, phenotype, load_prev_weights,\
+        #                      weights_save_path, parent_weights_path,\
+        #                      train_time, self.num_epochs, datagen, datagen_test])
 
 
         if metrics is not None:
