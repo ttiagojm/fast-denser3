@@ -158,6 +158,7 @@ class Evaluator:
         """
         self.dataset = load_dataset(dataset)
         self.fitness_metric = fitness_metric
+        print(f"Fitness metric: {fitness_metric}")
 
 
     def get_layers(self, phenotype):
@@ -512,7 +513,7 @@ class Evaluator:
 
         trainable_count = model.count_params()
         score = tf.keras.callbacks.History()
-
+            
         if self.fitness_metric.__name__ == "relu_determinant":
             if datagen is None:
                 data = self.dataset['evo_x_test']
@@ -520,11 +521,21 @@ class Evaluator:
             else: 
                 data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=batch_size)
                 data = next(iter(data))
-            
+
             # Passing only a batch of data to evaluate
             K_mat = self.fitness_metric(model, data)
             _, det = tf.linalg.slogdet(K_mat)
             accuracy_test = float(tf.get_static_value(det))
+        
+        elif self.fitness_metric.__name__ == "ntk":
+            if datagen is None:
+                data = self.dataset['evo_x_test']
+                x1, x2 = data[:batch_size, :, :, :], data[batch_size:batch_size, :, :, :]
+            else: 
+                data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=batch_size)
+                x1, x2 = next(iter(data)), next(iter(data))
+
+            K_mat = self.fitness_metric(model, x1, x2)
 
         else:
             #early stopping
@@ -1037,3 +1048,44 @@ def calc_K(K_orig, data):
     K_mat = tf.matmul(x, tf.transpose(x))
     K2_mat = tf.matmul(1.-x, 1.-tf.transpose(x))
     return K_orig + K_mat + K2_mat
+
+
+@tf.function
+def empirical_ntk_jacobian_contraction(fnet_single, x1, x2):
+
+    # Compute Jacobian based on x1
+    with tf.GradientTape(persistent=True) as tape:
+        tape.watch(x1)
+        y1 = fnet_single(x1)
+    jac1 = tape.batch_jacobian(y1, x1)
+    jac1 = [tf.reshape(jac1, [j.shape[0], j.shape[1], -1]) for j in tf.unstack(jac1, axis=0)]
+    del tape
+
+    # Compute Jacobian based on x2
+    with tf.GradientTape(persistent=True) as tape:
+        tape.watch(x2)
+        y2 = fnet_single(x2)
+    jac2 = tape.batch_jacobian(y2, x2)
+    jac2 = [tf.reshape(jac2, [j.shape[0], j.shape[1], -1]) for j in tf.unstack(jac2, axis=0)]
+    del tape
+    
+    # Compute Jacobian(x1) @ Jacobian(x2).T
+    result = tf.stack([tf.einsum('Naf,Mbh->NMab', j1, j2) for j1, j2 in zip(jac1, jac2)])
+    ntk = tf.reduce_sum(result, axis=0)
+    return ntk
+
+@tf.function
+def calc_eigen(result):
+    max_eig = tf.constant(-float('inf'), dtype=result.dtype)
+    min_eig = tf.constant(float('inf'), dtype=result.dtype)
+
+    def compute_eigenvals(t):
+        vals = tf.linalg.eigvalsh(t)
+        return tf.reduce_max(vals), tf.reduce_min(vals)
+
+    max_eigs, min_eigs = tf.map_fn(compute_eigenvals, result, dtype=(result.dtype, result.dtype))
+    
+    max_eig = tf.reduce_max(max_eigs)
+    min_eig = tf.reduce_min(min_eigs)
+
+    return max_eig, min_eig

@@ -17,7 +17,7 @@ from sklearn.metrics import accuracy_score, mean_squared_error
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
-from fast_denser.utils import calc_K
+from fast_denser.utils import calc_K, empirical_ntk_jacobian_contraction, calc_eigen
 
 def accuracy(y_true, y_pred):
 	"""
@@ -92,3 +92,15 @@ def relu_determinant(model, data):
 			K_mat = calc_K(K_mat, layer)
 
 	return K_mat
+
+
+def ntk(model, x1, x2):
+	result = empirical_ntk_jacobian_contraction(
+		model, 
+		x1,
+		x2
+	)
+
+	max_eig, min_eig = calc_eigen(result)
+
+	return max_eig/min_eig
