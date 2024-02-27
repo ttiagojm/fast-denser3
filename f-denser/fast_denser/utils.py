@@ -537,8 +537,10 @@ class Evaluator:
                 data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=10)
                 x1, x2 = next(iter(data)), next(iter(data))
 
+            # eig_val_ratio is positive correlated with error rate. Because we're maximizing fitness
+            # and we want to minimize eig_val_ratio , so we need to flip the sign
             eig_val_ratio = self.fitness_metric(model, x1, x2)
-            accuracy_test = float(tf.get_static_value(eig_val_ratio))
+            accuracy_test = -float(tf.get_static_value(eig_val_ratio))
 
         else:
             #early stopping
