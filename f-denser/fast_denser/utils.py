@@ -532,9 +532,9 @@ class Evaluator:
                 data = self.dataset['evo_x_test']
 
                 # Not using batch-size for performance issues
-                x1, x2 = data[:10, :, :, :], data[10:20, :, :, :]
+                x1, x2 = data[:32, :, :, :], data[32:32, :, :, :]
             else: 
-                data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=10)
+                data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=32)
                 x1, x2 = next(iter(data)), next(iter(data))
 
             # eig_val_ratio is positive correlated with error rate. Because we're maximizing fitness
