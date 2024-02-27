@@ -537,7 +537,8 @@ class Evaluator:
                 data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=10)
                 x1, x2 = next(iter(data)), next(iter(data))
 
-            K_mat = self.fitness_metric(model, x1, x2)
+            eig_val_ratio = self.fitness_metric(model, x1, x2)
+            accuracy_test = float(tf.get_static_value(eig_val_ratio))
 
         else:
             #early stopping
