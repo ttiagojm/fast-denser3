@@ -530,9 +530,11 @@ class Evaluator:
         elif self.fitness_metric.__name__ == "ntk":
             if datagen is None:
                 data = self.dataset['evo_x_test']
-                x1, x2 = data[:batch_size, :, :, :], data[batch_size:batch_size, :, :, :]
+
+                # Not using batch-size for performance issues
+                x1, x2 = data[:10, :, :, :], data[10:20, :, :, :]
             else: 
-                data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=batch_size)
+                data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=10)
                 x1, x2 = next(iter(data)), next(iter(data))
 
             K_mat = self.fitness_metric(model, x1, x2)
