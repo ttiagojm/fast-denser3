@@ -1,4 +1,4 @@
-<features> ::= <convolution> | <convolution> | <pooling> | <pooling> | <dropout> | <batch-norm>
+<features> ::= <convolution> | <convolution> | <pooling> | <pooling> | <batch-norm>
 <convolution> ::= layer:conv [num-filters,int,1,32,256] [filter-shape,int,1,2,5] [stride,int,1,1,3] <padding> <activation-function> <bias>
 <batch-norm> ::= layer:batch-norm
 <pooling> ::= <pool-type> [kernel-size,int,1,2,5] [stride,int,1,1,3] <padding>
