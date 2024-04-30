@@ -532,7 +532,7 @@ class Evaluator:
                 data = self.dataset['evo_x_test']
 
                 # Not using batch-size for performance issues
-                x1, x2 = data[:32, :, :, :], data[32:32, :, :, :]
+                x1, x2 = data[:32, :, :, :], data[32:64, :, :, :]
             else: 
                 data = datagen_test.flow(self.dataset['evo_x_test'], batch_size=32)
                 x1, x2 = next(iter(data)), next(iter(data))
