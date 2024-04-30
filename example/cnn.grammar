@@ -6,7 +6,7 @@
 <padding> ::= padding:same | padding:valid
 <classification> ::= <fully-connected>
 <fully-connected> ::= layer:fc <activation-function> [num-units,int,1,128,2048] <bias> 
-<activation-function> ::= act:relu
+<activation-function> ::= act:linear | act:relu | act:sigmoid
 <bias> ::= bias:True | bias:False
 <softmax> ::= layer:fc act:softmax num-units:10 bias:True
 <learning> ::= <gradient-descent> <early-stop> [batch_size,int,1,50,500] epochs:10000 | <rmsprop> <early-stop> [batch_size,int,1,50,500] epochs:10000 | <adam> <early-stop> [batch_size,int,1,50,500] epochs:10000
