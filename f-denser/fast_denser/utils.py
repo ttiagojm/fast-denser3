@@ -1056,41 +1056,26 @@ def calc_K(K_orig, data):
 
 
 @tf.function
-def empirical_ntk_jacobian_contraction(fnet_single, x1, x2):
+def empirical_ntk_jacobian_contraction(model, x1, x2):
 
-    # Compute Jacobian based on x1
-    with tf.GradientTape(persistent=True) as tape:
-        tape.watch(x1)
-        y1 = fnet_single(x1)
-    jac1 = tape.batch_jacobian(y1, x1)
-    jac1 = [tf.reshape(jac1, [j.shape[0], j.shape[1], -1]) for j in tf.unstack(jac1, axis=0)]
-    del tape
+    def compute_jacobian(model, x):
+        # Jacobians should be done considering each layer (model.trainable_variables)
+        with tf.GradientTape(persistent=True) as tape:
+            tape.watch(model.trainable_variables)
+            outputs = model(x)
+        jac = tape.jacobian(outputs, model.trainable_variables)
 
-    # Compute Jacobian based on x2
-    with tf.GradientTape(persistent=True) as tape:
-        tape.watch(x2)
-        y2 = fnet_single(x2)
-    jac2 = tape.batch_jacobian(y2, x2)
-    jac2 = [tf.reshape(jac2, [j.shape[0], j.shape[1], -1]) for j in tf.unstack(jac2, axis=0)]
-    del tape
-    
-    # Compute Jacobian(x1) @ Jacobian(x2).T
-    result = tf.stack([tf.einsum('Naf,Mbh->NMab', j1, j2) for j1, j2 in zip(jac1, jac2)])
-    ntk = tf.reduce_sum(result, axis=0)
-    return ntk
+        # Keep batch and the number of outputs (classes in the case of the CNN)
+        return [tf.reshape(j, [j.shape[0], j.shape[1], -1]) for j in jac]  
+
+    jac1 = compute_jacobian(model, x1)
+    jac2 = compute_jacobian(model, x2)
+
+    # # Compute J(x1) @ J(x2).T
+    result = tf.stack([tf.einsum('Naf,Mbf->NMab', j1, j2) for j1, j2 in zip(jac1, jac2)])
+    return tf.reduce_sum(result, axis=0)
 
 @tf.function
 def calc_eigen(result):
-    max_eig = tf.constant(-float('inf'), dtype=result.dtype)
-    min_eig = tf.constant(float('inf'), dtype=result.dtype)
-
-    def compute_eigenvals(t):
-        vals = tf.linalg.eigvalsh(t)
-        return tf.reduce_max(vals), tf.reduce_min(vals)
-
-    max_eigs, min_eigs = tf.map_fn(compute_eigenvals, result, dtype=(result.dtype, result.dtype))
-    
-    max_eig = tf.reduce_max(max_eigs)
-    min_eig = tf.reduce_min(min_eigs)
-
-    return max_eig, min_eig
+    eigenvalues = tf.linalg.eigvalsh(ntk)
+    return tf.reduce_max(eigenvalues), tf.reduce_min(eigenvalues)
