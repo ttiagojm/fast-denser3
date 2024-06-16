@@ -1077,5 +1077,5 @@ def empirical_ntk_jacobian_contraction(model, x1, x2):
 
 @tf.function
 def calc_eigen(result):
-    eigenvalues = tf.linalg.eigvalsh(ntk)
+    eigenvalues = tf.linalg.eigvalsh(result)
     return tf.reduce_max(eigenvalues), tf.reduce_min(eigenvalues)
