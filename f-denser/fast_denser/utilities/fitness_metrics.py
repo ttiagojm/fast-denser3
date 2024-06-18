@@ -80,7 +80,7 @@ def relu_determinant(model, data):
 	for i, layer in enumerate(model.layers):
 		layer_outputs.append(layer.output)
 
-		if hasattr(layer, "activation") and layer.activation.__name__ == "relu":
+		if hasattr(layer, "relu") or (hasattr(layer, "activation") and layer.activation.__name__ == "relu"):
 			relu_layers.append(i)
 
 	activation_model = tf.keras.models.Model(inputs=model.input, outputs=layer_outputs)
